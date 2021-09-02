@@ -1,11 +1,13 @@
 from agent import *
 import os
+import csv
+from datetime import datetime as dt
 
 '''
 Read in agents to create from folder.
 '''
 def import_agents(dir):
-    # return agent.SampleAgents
+    return SampleAgents
     next_id = 0
     agent_list = {}
     for file in os.listdir(dir):
@@ -49,22 +51,30 @@ def compete(agent1, agent2, rounds):
     return score1, score2
 
 '''
-TODO: Export competition results to csv
+Exports competition results to a csv
 '''
-def export_results(results):
+def export_results(results, agent_ids):
+    f = open("pd_dilemma_" + str(dt.now()) + ".csv", "x")
+    w = csv.DictWriter(f, agent_ids)
+    w.writeheader()
+    for id in agent_ids:
+        row_dict = { item[1]: results[item] for item in results if item[0] == id}
+        w.writerow(row_dict)
+    f.close()
     return
 
 '''
 Runs the round-robin competition between all agents.
 '''
-def run_competition(agents, rounds):
+def run_competition(agent_dict, rounds):
     results = {}
-    for i in range(len(agents)):
-        for j in range(i, len(agents)):
-            scores = compete(agents[i], agents[j], rounds)
-            results[(agents[i].id, agents[j].id)] = scores[0]
-            results[(agents[j].id, agents[i].id)] = scores[1]
-    export_results(results)
+    agent_ids = list(agent_dict.keys())
+    for i in range(len(agent_ids)):
+        for j in range(i, len(agent_ids)):
+            scores = compete(agent_dict[agent_ids[i]], agent_dict[agent_ids[j]], rounds)
+            results[(agent_ids[i], agent_ids[j])] = scores[0]
+            results[(agent_ids[j], agent_ids[i])] = scores[1]
+    export_results(results, agent_ids)
 
 def main():
     agents = import_agents("./agents/")

@@ -51,15 +51,15 @@ class RandomAgent(AgentInterface):
         return random.random() < 0.5
 
 SampleAgents = {
-    0 : TitForTat(0),
-    1 : AlwaysCooperate(1),
-    2 : AlwaysDefect(2),
-    3 : RandomAgent(3)
+    "Tit For Tat" : TitForTat("Tit For Tat"),
+    "Always Cooperate" : AlwaysCooperate("Always Cooperate"),
+    "Always Defect" : AlwaysDefect("Always Defect"),
+    "Random" : RandomAgent("Random")
 }
 
 '''
 Read-In Agent
-Policy read in from file during initialization.
+Policy is read in from file during initialization.
 '''
 class ReadInAgent(AgentInterface):
 
