@@ -24,6 +24,22 @@ class TitForTat(AgentInterface):
             return last_round[1]
 
 '''
+Forgiving Tit-For-Tat Agent Class
+Defects if last two opponent moves are both defects.
+'''    
+class ForgivingTitForTat(AgentInterface):
+
+    def __init__(self, id):
+        super().__init__(id)
+        self.last_two_defects = 0
+
+    def policy(self, round_number: int, self_score: int, opp_score: int, last_round: list) -> bool:
+        self.last_two_defects += 1 if not last_round[1] else -1 if round_number >= 2 else 0
+        if self.last_two_defects == 2:
+            return False
+        return True
+
+'''
 Always Cooperate Agent Class
 Always cooperates.
 '''
@@ -51,18 +67,9 @@ class RandomAgent(AgentInterface):
         return random.random() < 0.5
 
 SampleAgents = {
-    "Tit For Tat" : TitForTat("Tit For Tat"),
+    "Tit For Tat" : TitForTat("Tit for Tat"),
+    "Forgiving Tit for Tat" : ForgivingTitForTat("Forgiving Tit for Tat"),
     "Always Cooperate" : AlwaysCooperate("Always Cooperate"),
     "Always Defect" : AlwaysDefect("Always Defect"),
     "Random" : RandomAgent("Random")
 }
-
-'''
-Read-In Agent
-Policy is read in from file during initialization.
-'''
-class ReadInAgent(AgentInterface):
-
-    def __init__(self, id, file):
-        self.id = id
-        self.policy = eval(file.open().read())

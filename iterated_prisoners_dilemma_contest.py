@@ -50,11 +50,33 @@ def compete(agent1, agent2, rounds):
     
     return score1, score2
 
+
+'''
+Runs a noisy iterated prisoner's dilemma between two agents for the given number of rounds.
+'''
+def noisy_compete(agent1, agent2, rounds, noise):
+    score1 = score2 = 0
+    last_round = [None, None]
+
+    for i in range(rounds):
+        choice1 = agent1.policy(i, score1, score2, last_round)
+        if random.random() < noise:
+            choice1 = not choice1
+        choice2 = agent2.policy(i, score2, score1, [last_round[1], last_round[0]])
+        if random.random() < noise:
+            choice2 = not choice2
+        last_round = [choice1, choice2]
+        r1, r2 = get_rewards(choice1, choice2)
+        score1 += r1
+        score2 += r2
+    
+    return score1, score2
+
 '''
 Exports competition results to a csv
 '''
-def export_results(results, agent_ids):
-    f = open("pd_dilemma_" + str(dt.now()) + ".csv", "x")
+def export_results(results, agent_ids, noise, rounds):
+    f = open("pd_dilemma_noise_" + str(noise) + "_rounds_" + str(rounds) + ".csv", "x")
     w = csv.DictWriter(f, agent_ids)
     w.writeheader()
     for id in agent_ids:
@@ -74,12 +96,28 @@ def run_competition(agent_dict, rounds):
             scores = compete(agent_dict[agent_ids[i]], agent_dict[agent_ids[j]], rounds)
             results[(agent_ids[i], agent_ids[j])] = scores[0]
             results[(agent_ids[j], agent_ids[i])] = scores[1]
-    export_results(results, agent_ids)
+    export_results(results, agent_ids, 0, rounds)
+
+'''
+Runs the noisy round-robin competition between all agents.
+'''
+def run_noisy_competition(agent_dict, rounds, noise):
+    results = {}
+    agent_ids = list(agent_dict.keys())
+    for i in range(len(agent_ids)):
+        for j in range(i, len(agent_ids)):
+            scores = noisy_compete(agent_dict[agent_ids[i]], agent_dict[agent_ids[j]], rounds, noise)
+            results[(agent_ids[i], agent_ids[j])] = scores[0]
+            results[(agent_ids[j], agent_ids[i])] = scores[1]
+    export_results(results, agent_ids, noise, rounds)
 
 def main():
     agents = import_agents("./agents/")
-    rounds = 1000
-    run_competition(agents, rounds)
+    config = eval(open("config.txt").read())
+    if config["noise"] == 0:
+        run_competition(agents, config["rounds"])
+    else:
+        run_noisy_competition(agents, config["rounds"], config["noise"])
 
 if __name__ == "__main__":
     main()
